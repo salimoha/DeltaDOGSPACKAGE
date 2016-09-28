@@ -1,0 +1,234 @@
+[33mcommit dd8e988cbeefa3c7e1456a7e011007961cd3e902[m
+Author: Shahrouz Alimo <Shahrouzalima@gmail.com>
+Date:   Thu Oct 8 17:51:47 2015 -0700
+
+    added the example code to test the algorithm. TODO: fix Ain and bin for x<2 and y<2
+
+[1mdiff --git a/Adoptive_K_Search.asv b/Adoptive_K_Search.asv[m
+[1mdeleted file mode 100644[m
+[1mindex 2b9969d..0000000[m
+[1m--- a/Adoptive_K_Search.asv[m
+[1m+++ /dev/null[m
+[36m@@ -1,89 +0,0 @@[m
+[31m-function [x y cse]=Adoptive_K_Search(x,inter_par,xc,R2)[m
+[31m-%% This funciton finds the minimizer of the search function in a simplex [m
+[31m-%              minimize s^k_i(x) = p^k(x) - K e^k_i(x)[m
+[31m-%             subject to [m
+[31m-% input:[m
+[31m-% x: interpolating initial point for search function [m
+[31m-% inter_par: interpolation parameters[m
+[31m-% xc: circumcenter for the simplex that x is located at[m
+[31m-% R2: square of circumradiaus for the simplex that x is located at[m
+[31m-% output:[m
+[31m-% x: the minimizer of search function [m
+[31m-% y: minimum of search fucntion at x[m
+[31m-% cse: [m
+[31m-% created by: Shahrouz Alimo & Pooriya Beyhaghi[m
+[31m-% last modification: Oct/7/2015[m
+[31m-%%[m
+[31m-global n Ain bin[m
+[31m-%% parameters of backtracking[m
+[31m-cc=0.01;[m
+[31m-rho=0.9; [m
+[31m-%% Initialize the point in the simplex[m
+[31m-%[xc,R2]=circhyp(xiT(:,tri(index,:)), n);[m
+[31m-iter=1; cse=2;[m
+[31m-y=cost(x,inter_par,xc, R2);[m
+[31m-%% Calculate the Newton direction   [m
+[31m-while iter<3[m
+[31m-if (y==-inf)[m
+[31m-    cse=1;[m
+[31m-    break[m
+[31m-end[m
+[31m-g=kgrad(x,inter_par,xc,R2);[m
+[31m-H=khess(x,inter_par,xc,R2);[m
+[31m-H=modichol(H,0.1,20);[m
+[31m-H=(H+H')/2;[m
+[31m-options=optimoptions('quadprog','Display','none');[m
+[31m-p=quadprog(H,g,Ain,bin-Ain*x,[],[],[],[],zeros(n,1),options);[m
+[31m-%% Perform the hessian modification[m
+[31m-if norm(p)<1e-3[m
+[31m-            break[m
+[31m-end[m
+[31m-a=1;[m
+[31m-%% Backtracking[m
+[31m-while 1[m
+[31m-    x1=x+a*p;[m
+[31m-        y1=cost(x1,inter_par,xc,R2);[m
+[31m-        if (y-y1)>0[m
+[31m-        x=x1; y=y1;[m
+[31m-        break[m
+[31m-    else[m
+[31m-        a=a*rho;[m
+[31m-        if norm(a*p)<1e-4[m
+[31m-            break[m
+[31m-        end[m
+[31m-    end[m
+[31m-end[m
+[31m-iter=iter+1;[m
+[31m-end[m
+[31m-end[m
+[31m-%% cost function [m
+[31m-function [M]=cost(x,inter_par,xc,R2)[m
+[31m-global y0[m
+[31m-M=-(R2-norm(x-xc)^2)/(interpolate_val(x,inter_par)-y0);[m
+[31m-if interpolate_val(x,inter_par)<y0[m
+[31m-    M=-inf;[m
+[31m-end[m
+[31m-end[m
+[31m-function [ y ] = kgrad(x,inter_par,xc,R2)[m
+[31m-global y0[m
+[31m-p=interpolate_val(x,inter_par);[m
+[31m-gp=interpolate_grad(x,inter_par);[m
+[31m-ge=-2*(x-xc);[m
+[31m-e=R2-(x-xc)'*(x-xc);[m
+[31m-%y=gp/e-(p-y0)*ge/e^2;[m
+[31m-y=-ge/(p-y0)+e*gp/(p-y0)^2;[m
+[31m-end[m
+[31m-%% kth iteration hessian ?[m
+[31m-function [ H ] = khess(x,inter_par,xc,R2)[m
+[31m-global y0 n[m
+[31m-p=interpolate_val(x,inter_par);[m
+[31m-Hp=interpolate_hessian(x,inter_par);[m
+[31m-gp=interpolate_grad(x,inter_par);[m
+[31m-ge=-2*(x-xc);[m
+[31m-e=R2-norm(x-xc)^2;[m
+[31m-%H=Hp/e-(gp*ge.'+ge*gp.')/e^2+(p-y0)*(2*ge*ge.'/e^3+2*eye(n)/e^2);[m
+[31m-H=2*eye(n)/(p-y0)+(gp*ge.'+ge*gp.')/(p-y0)^2-e*(2*gp*gp.'/(p-y0)^3-2*Hp/(p-y0)^2); [m
+[31m-[m
+[31m-end[m
+[31m-[m
+[31m-    [m
+\ No newline at end of file[m
+[1mdiff --git a/Constant_K_Search.asv b/Constant_K_Search.asv[m
+[1mindex 20fdb89..be2e23e 100644[m
+[1m--- a/Constant_K_Search.asv[m
+[1m+++ b/Constant_K_Search.asv[m
+[36m@@ -31,9 +31,9 @@[m [mH=khessSearch(x,inter_par,xc,R2);[m
+ H=modichol(H,0.1,20);[m
+ H=(H+H')/2;[m
+ % constrained function[m
+[31m-cl =[]; Jl=[]; %Hc=[];[m
+[32m+[m[32mCSl =[]; Jl=[]; %Hc=[];[m
+ for l=1:m[m
+[31m-cl=vertcat(cl,costSearch(x,inter_Par{l},xc, R2));[m
+[32m+[m[32mCSl=vertcat(CSl,costSearch(x,inter_Par{l},xc, R2));[m
+ Jl=vertcat(Jl, kgradSearch(x,inter_Par{l},xc, R2));[m
+ % Hcl=khessSearch(x,inter_Par{l},xc, R2);[m
+ % Hcl=modichol(Hcl,0.1,20);[m
+[36m@@ -42,18 +42,16 @@[m [mJl=vertcat(Jl, kgradSearch(x,inter_Par{l},xc, R2));[m
+ end[m
+ %% linearized constrained for sqp[m
+ A = vertcat(Ain, Jl);[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-%%[m
+[32m+[m[32mb = vertcat(bin - Ain*x, -CSl);[m
+[32m+[m[32m%[m
+ options=optimoptions('quadprog','Display','none');[m
+[31m-p=quadprog(H,g,Ain,bin-Ain*x,[],[],[],[],zeros(n,1),options);[m
+[32m+[m[32mp=quadprog(H,g,A,b,[],[],[],[],zeros(n,1),options);[m
+ % Perform the hessian modification[m
+ if norm(p)<1e-3[m
+             break[m
+ end[m
+ a=1;[m
+[31m-%Backtracking[m
+[32m+[m[32m%Backtracking ???????????????????????????[m
+ while 1[m
+     x1=x+a*p;[m
+         y1=costSearch(x1,inter_par,xc,R2);[m
+[36m@@ -69,7 +67,7 @@[m [mwhile 1[m
+ end[m
+ iter=iter+1;[m
+ end[m
+[31m-end[m
+[32m+[m
+ %% search function [m
+ function [M]=costSearch(x,inter_par,xc,R2)[m
+ global K[m
+[1mdiff --git a/Constant_K_Search.m b/Constant_K_Search.m[m
+[1mindex f2a50da..96a61cb 100644[m
+[1m--- a/Constant_K_Search.m[m
+[1m+++ b/Constant_K_Search.m[m
+[36m@@ -15,7 +15,9 @@[m [mfunction [x y cse]=Constant_K_Search(x,inter_par,xc,R2)[m
+ % created by: Shahrouz Alimo & Pooriya Beyhaghi[m
+ % last modification: Oct/7/2015[m
+ %[m
+[31m-global n Ain bin m[m
+[32m+[m[32minter_Par = inter_par.inter_par_C;[m
+[32m+[m[32minter_par = inter_par.inter_par_S;[m
+[32m+[m[32mglobal n Ain bin m ms mc[m
+ % parameters of backtracking[m
+ cc=0.01;[m
+ rho=0.9; [m
+[36m@@ -26,6 +28,9 @@[m [miter=1; cse=2;[m
+ % Calculate the Newton direction   [m
+ % search function [m
+ y=costSearch(x,inter_par,xc, R2);[m
+[32m+[m[32m% y=cost(x,inter_par,xc, R2);[m
+[32m+[m[32mwhile iter<3[m
+[32m+[m
+ g=kgradSearch(x,inter_par,xc,R2);[m
+ H=khessSearch(x,inter_par,xc,R2);[m
+ H=modichol(H,0.1,20);[m
+[36m@@ -42,7 +47,7 @@[m [mJl=vertcat(Jl, kgradSearch(x,inter_Par{l},xc, R2));[m
+ end[m
+ %% linearized constrained for sqp[m
+ A = vertcat(Ain, Jl);[m
+[31m-b = vertcat(bin - Ain*x, -CSl);[m
+[32m+[m[32mb = vertcat(bin - Ain*x, -1.*CSl);[m
+ %[m
+ options=optimoptions('quadprog','Display','none');[m
+ p=quadprog(H,g,A,b,[],[],[],[],zeros(n,1),options);[m
+[36m@@ -101,7 +106,7 @@[m [mHp=interpolate_hessian(x,inter_par);[m
+ % ge=-2*(x-xc);[m
+ % e=R2-norm(x-xc)^2;[m
+ % Constant K hessian for the search function [m
+[31m-H = Hp + K .* 2*eye(n);[m
+[32m+[m[32mH = Hp + K .* 2*eye(size(x,1));[m
+ %H=Hp/e-(gp*ge.'+ge*gp.')/e^2+(p-y0)*(2*ge*ge.'/e^3+2*eye(n)/e^2);[m
+ % adaptive K[m
+ % H=2*eye(n)/(p-y0)+(gp*ge.'+ge*gp.')/(p-y0)^2-e*(2*gp*gp.'/(p-y0)^3-2*Hp/(p-y0)^2); [m
+[1mdiff --git a/LINcos_DeltaDogs.asv b/LINcos_DeltaDogs.asv[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6b60d62[m
+[1m--- /dev/null[m
+[1m+++ b/LINcos_DeltaDogs.asv[m
+[36m@@ -0,0 +1,187 @@[m
+[32m+[m[32m% The Adaoptive K algorithm bound constrained[m
+[32m+[m[32mclear all[m
+[32m+[m[32mclose all[m
+[32m+[m[32mclc[m
+[32m+[m[32mglobal n y0 m bnd1 bnd2 kappa fun rk ss0 y00 Ain bin[m
+[32m+[m
+[32m+[m[32mkappa=1.2;[m
+[32m+[m[32m% setenvAVL[m
+[32m+[m[32malpha=1;[m
+[32m+[m[32mglo=0;[m
+[32m+[m
+[32m+[m[32m% specify the objective function[m
+[32m+[m[32m%fun=@alisonfit;[m
+[32m+[m[32mfun=@fit8;[m
+[32m+[m[32m%fun=@plygen;[m
+[32m+[m[32m%fun=@rastriginn;[m
+[32m+[m
+[32m+[m[32m% parameters[m
+[32m+[m[32mn=8; m=0; meq=0; Np=100; Nr=2; pho=1; y_max=3; y00=0.1;[m
+[32m+[m[32m% interpolaion strategy[m
+[32m+[m[32minter_method=1;[m
+[32m+[m[32m% upper and lower bouds[m
+[32m+[m[32m%ss0=[0.01 1.0472 0.01 0.5 0.1 0.7 0.3 0 0 0].';[m
+[32m+[m[32m%ss1=[pi/2 pi/2 pi/2 1.5 0.5 1.5 0.5 1 1 1].';[m
+[32m+[m[32mss0=[10 1e-4 10 1e-4 10 1e-4 100 1e-4]';[m
+[32m+[m[32mss1=[1000 1 100 2.5 20 1.6 10000 pi/2]';[m
+[32m+[m
+[32m+[m[32m% the inequality constraints[m
+[32m+[m[32mAin=[]; bin=[];[m
+[32m+[m[32m% the equlaity constraints[m
+[32m+[m[32mAeq=[]; beq=[];[m
+[32m+[m
+[32m+[m[32m% initial calculations[m
+[32m+[m[32mbnd1=zeros(n,1); bnd2=ones(n,1);[m[41m [m
+[32m+
