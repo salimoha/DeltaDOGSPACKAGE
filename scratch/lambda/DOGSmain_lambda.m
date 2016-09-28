@@ -60,7 +60,6 @@ else
     %has current best improved?
     clear yE xE xU
     yE = load('surr_J_new'); %store cost function result
-    load('surr_C_new'); %store cost function result
     
     load('opt_prev')
     y0=Search.constant;
@@ -71,10 +70,7 @@ else
         
         % Modify the interpolations
         inter_par_p= interpolateparametarization(xE,yE,inter_method);
-        for jj=1:ms
-            inter_par_g{jj}= interpolateparametarization(xE,C{jj},inter_method);
-        end
-        
+ 
         
         % Calculate Discrete search function
         yup=zeros(1,size(xU,2));
@@ -93,7 +89,8 @@ else
             
             [xm ym(k) Cs(k)]= tringulation_search_constraints(inter_par_p,inter_par_g,[xE xU]);
             %keyboard
-            xm = (xm-bnd1)./(bnd2-bnd1).*MESH_SIZE; %xm = Unconstraint_quantizer(xm,1);
+            xm = (xm-bnd1)./(bnd2-bnd1).*MESH_SIZE; 
+            %xm = Unconstraint_quantizer(xm,1);
             xm =xm./ MESH_SIZE.*(bnd2-bnd1)+bnd1;
             %     xm=round((xm-bnd1)./(bnd2-bnd1).*MESH_SIZE)./MESH_SIZE.*(bnd2-bnd1)+bnd1;
             [xm,xE,xU,newadd,success]=points_neighbers_find(xm,xE,xU);
@@ -128,30 +125,22 @@ else
         %impro_p=mindis(xmp,xE);
         %impro_q=mindis(xmq,xE);
         %
-        [ViolCon ] = const_violation( con, ConBound );
-        %
-        conV = cell2mat(ViolCon)>0;
-        CX = [con sqrt(FUN.val)];
-        %     keyboard
-        ConStop = max(0, max(cell2mat(ViolCon)));
+  
         %  if impro<RES|| k == iter_max +1 || ConStop ==0
         xE=[xE xm];
         %if isx ~=1
         %   xU=[xU xm];
         %end
         yE = [yE FUN.val];
-        for jj=1:ms
-            C{jj}=[C{jj} real(con{jj})];
-        end
+  
         % figure(1)
         % plot(yi)
         % drawnow
         %% ploting constraints
-        % plot_preview(xi,yi,C )
-        %     prettyplot_IMEXRK( xi, yi, C )
-        [  CV_S ] = const_violation( C, ConBound );
-        prettyplot_IMEXRK( xE, yE, CV_S)
-        drawnow
+    
+        
+        
+        
         disp([num2str(k/iter_max*100), ' % Completed'])
     end
     

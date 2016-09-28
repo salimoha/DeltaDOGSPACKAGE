@@ -2,9 +2,9 @@ function [xm ym CSm indm] = tringulation_search_constraints(inter_par_p,inter_pa
 % This function evalutes the 
 global n bnd1 bnd2 Search tri
 tri=delaunayn(xi.');
-% keyboard
+keyboard
 ym=inf;
-CSm=1;
+CSm=1;xm = xi(:,1);%??????????
 %            keyboard
     for ind=1:size(tri,1)
 %          keyboard
@@ -29,7 +29,7 @@ end
          if (CS<CSm)
              xm=x; ym=y; CSm = CS; indm=ind;
          end
-         if (y<ym & CS==CSm)
+         if (y<=ym & CS==CSm)
 %          elseif (y<ym & CS==CSm)
              xm=x; ym=y; indm=ind;
          end
