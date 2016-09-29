@@ -1,25 +1,33 @@
-function [xm cse indm ym] = tringulation_search_bound1(inter_par,xi,tri)
+function [xm,pm] = tringulation_search_bound1(inter_par,xi)
 
-global n bnd1 bnd2 y0
-% Update global interpolation
-    %xie=xiT(:,yiT<y_cr); yie=yiT(:,yiT<y_cr);
-    %[w,v] = polyharmsp_weight3(xie, yie.',1); tri=delaunayn(xiT.');
-ym=inf; cse=2;
+global n y0 
+ %   [xm,ym]=inter_min(xi(:,end),inter_par);
+    
+%if ym>0
+if 1 
+tri=delaunayn(xi.');   ym=inf; cse=2;
     for ind=1:size(tri,1)
-      [xc,R2]=circhyp(xi(:,tri(ind,:)), n);
-      if R2<5
+        if min(tri(ind,:))>n+1
+     % keyboard
+            [xc,R2]=circhyp(xi(:,tri(ind,:)), n);
+      if R2<1000
        x=xi(:,tri(ind,:))*ones(n+1,1)/(n+1);
+ %      yss=yi(tri(ind,:))*ones(n+1,1)/(n+1);
+       %y=(interpolate_val(x,inter_par)+yss-y0)/(R2-norm(x-xc)^2);
+     %  x=Adoptive_K_Search(x,inter_par,xc,R2);
        y=(interpolate_val(x,inter_par)-y0)/(R2-norm(x-xc)^2);
-      if (y<ym)
+      if (y<=ym)
           ym=y; xm=x; indm=ind;
       end
       end
+        end
     end
-    
+%  %  keyboard
+   %[xm,pm]=quadtaic_simplex_Search(xm,inter_par,xi(:,tri(indm,:)),yi(:,tri(indm,:)));
     [xc,R2]=circhyp(xi(:,tri(indm,:)), n);
-    x=xi(:,tri(indm,:))*ones(n+1,1)/(n+1); 
-    [x y cse]=Adoptive_K_Search(x,inter_par,xc,R2);
-    if cse==1
-       xm=inter_min(xm,inter_par);
-    end
+    xm=xi(:,tri(indm,:))*ones(n+1,1)/(n+1); 
+    xm=Adoptive_K_Search(xm,inter_par,xc,R2);
+%else
+%   [xm]=min_decrease(x0, xm, inter_par); 
+end
 end
