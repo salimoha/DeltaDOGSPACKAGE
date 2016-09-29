@@ -93,7 +93,7 @@ else
             end
     
 %% minimizing the search function
-     xm=tringulation_search_bound(inter_par,[xE],yE);
+     xm=tringulation_search_bound(inter_par,[xE,xU],yE);
      
     %% 
     ninit = size(xE,2);
